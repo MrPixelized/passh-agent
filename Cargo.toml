@@ -1,0 +1,10 @@
+[package]
+name = "passh-agent"
+version = "0.1.0"
+authors = ["Ischa Abraham <contact@ischa.dev>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.ssh-agent]
+version = "0.2.2"
