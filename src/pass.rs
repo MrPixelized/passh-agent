@@ -100,6 +100,12 @@ fn tree_to_paths(lines: Vec<String>) -> Result<Vec<PathBuf>, String> {
 
 /// Return a vector of all paths to password-store files,
 /// where each path contains `query'.
-pub fn find(query: String) -> Result<Vec<String>, String> {
-    Err(String::from("Unimplemented"))
+pub fn find(query: &String) -> Result<Vec<String>, String> {
+    let paths = get_paths()?
+        .iter()
+        .map(|p| p.to_string_lossy().into_owned())
+        .filter(|p| p.contains(&query[..]))
+        .collect();
+
+    Ok(paths)
 }
