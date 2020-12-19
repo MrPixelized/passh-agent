@@ -2,8 +2,11 @@ use std::error;
 use std::fmt;
 
 use ssh_agent::proto::private_key as agent_private_key;
+use ssh_agent::proto::public_key as agent_public_key;
 use ssh_keys::PrivateKey;
+use ssh_keys::PublicKey;
 use ssh_keys::openssh::parse_private_key;
+use ssh_keys::openssh::parse_public_key;
 
 #[derive(Debug)]
 pub enum Error {
@@ -11,7 +14,7 @@ pub enum Error {
 }
 
 impl From<ssh_keys::Error> for Error {
-    fn from(err: ssh_keys::Error) -> Error {
+    fn from(err: ssh_keys::Error) -> Self {
         Error::ParseError(err)
     }
 }
@@ -33,11 +36,12 @@ impl error::Error for Error {
     }
 }
 
-pub trait ToSshAgentPrivateKey {
+pub trait ToSshAgentKey {
     fn to_private_key(&self) -> Result<Vec<agent_private_key::PrivateKey>, Error>;
+    fn to_public_key(&self) -> Result<agent_public_key::PublicKey, Error>;
 }
 
-impl ToSshAgentPrivateKey for String {
+impl ToSshAgentKey for String {
     fn to_private_key(&self) -> Result<Vec<agent_private_key::PrivateKey>, Error>  {
         let keys = parse_private_key(self)?;
 
@@ -57,6 +61,24 @@ impl ToSshAgentPrivateKey for String {
             _ => todo!(),
         })
         .collect();
+
+        Ok(agent_keys)
+    }
+
+    fn to_public_key(&self) -> Result<agent_public_key::PublicKey, Error> {
+        let key = parse_public_key(self)?;
+
+        let agent_keys = match key {
+            PublicKey::Rsa {
+                exponent, modulus
+            } => agent_public_key::PublicKey::Rsa (
+                agent_public_key::RsaPublicKey {
+                e: exponent,
+                n: modulus,
+                }
+            ),
+            _ => todo!(),
+        };
 
         Ok(agent_keys)
     }
