@@ -1,8 +1,7 @@
 use std::error;
 use std::fmt;
 
-use ssh_agent::proto::private_key::PrivateKey as SshAgentPrivateKey;
-use ssh_agent::proto::private_key::RsaPrivateKey as SshAgentRsaPrivateKey;
+use ssh_agent::proto::private_key as agent_private_key;
 use ssh_keys::PrivateKey;
 use ssh_keys::openssh::parse_private_key;
 
@@ -20,7 +19,7 @@ impl From<ssh_keys::Error> for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::ParseError(..) =>
+            Self::ParseError(_) =>
                 write!(f, "Something went wrong trying to parse the given key."),
         }
     }
@@ -35,18 +34,18 @@ impl error::Error for Error {
 }
 
 pub trait ToSshAgentPrivateKey {
-    fn to_private_key(&self) -> Result<Vec<SshAgentPrivateKey>, Error>;
+    fn to_private_key(&self) -> Result<Vec<agent_private_key::PrivateKey>, Error>;
 }
 
 impl ToSshAgentPrivateKey for String {
-    fn to_private_key(&self) -> Result<Vec<SshAgentPrivateKey>, Error>  {
+    fn to_private_key(&self) -> Result<Vec<agent_private_key::PrivateKey>, Error>  {
         let keys = parse_private_key(self)?;
 
         let agent_keys = keys.into_iter().map(|key| match key {
             PrivateKey::Rsa {
                 n, e, d, iqmp, p, q
-            } => SshAgentPrivateKey::Rsa (
-                SshAgentRsaPrivateKey {
+            } => agent_private_key::PrivateKey::Rsa (
+                agent_private_key::RsaPrivateKey {
                     n: n.to_owned(),
                     e: e.to_owned(),
                     d: d.to_owned(),
@@ -57,9 +56,8 @@ impl ToSshAgentPrivateKey for String {
             ),
             _ => todo!(),
         })
-        .collect::<Vec<SshAgentPrivateKey>>();
+        .collect();
 
         Ok(agent_keys)
     }
 }
-
