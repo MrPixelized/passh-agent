@@ -49,11 +49,11 @@ impl error::Error for Error {
 
 #[derive(Debug)]
 pub struct Config {
-    keypairs: Vec<(String, String)>,
+    pub keypairs: Vec<(String, String)>,
 }
 
 impl Config {
-    pub fn new(config: String) -> Result<Self, Error> {
+    pub fn new(config: &str) -> Result<Self, Error> {
         // Parse the configuration file into a loopable set of keypair tables
         let raw: String = fs::read_to_string(config)?;
         let config: toml::Value = raw.parse()?;
