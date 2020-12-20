@@ -6,7 +6,6 @@ edition = "2018"
 
 [dependencies]
 ssh-agent = "0.2.2"
-ssh-keys = "0.1.4"
 toml = "0.5"
 openssl = "0.10.31"
 base64 = "0.13.0"
