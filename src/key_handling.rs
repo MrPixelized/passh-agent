@@ -10,7 +10,8 @@ use ssh_keys::openssh::parse_public_key;
 
 #[derive(Debug)]
 pub enum Error {
-    ParseError(ssh_keys::Error)
+    ParseError(ssh_keys::Error),
+    MultiKeyError,
 }
 
 impl From<ssh_keys::Error> for Error {
@@ -24,6 +25,8 @@ impl fmt::Display for Error {
         match self {
             Self::ParseError(_) =>
                 write!(f, "Something went wrong trying to parse the given key."),
+            Self::MultiKeyError =>
+                write!(f, "Private key contained multiple keys for single identity."),
         }
     }
 }
@@ -32,20 +35,25 @@ impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             Self::ParseError(err) => Some(err),
+            Self::MultiKeyError => None,
         }
     }
 }
 
 pub trait ToSshAgentKey {
-    fn to_private_key(&self) -> Result<Vec<agent_private_key::PrivateKey>, Error>;
+    fn to_private_key(&self) -> Result<agent_private_key::PrivateKey, Error>;
     fn to_public_key(&self) -> Result<agent_public_key::PublicKey, Error>;
 }
 
 impl ToSshAgentKey for String {
-    fn to_private_key(&self) -> Result<Vec<agent_private_key::PrivateKey>, Error>  {
+    fn to_private_key(&self) -> Result<agent_private_key::PrivateKey, Error>  {
         let keys = parse_private_key(self)?;
 
-        let agent_keys = keys.into_iter().map(|key| match key {
+        if keys.len() > 1 {
+            return Err(Error::MultiKeyError);
+        }
+
+        let agent_key = match keys[0] {
             PrivateKey::Rsa {
                 n, e, d, iqmp, p, q
             } => agent_private_key::PrivateKey::Rsa (
@@ -59,16 +67,15 @@ impl ToSshAgentKey for String {
                 }
             ),
             _ => todo!(),
-        })
-        .collect();
+        };
 
-        Ok(agent_keys)
+        Ok(agent_key)
     }
 
     fn to_public_key(&self) -> Result<agent_public_key::PublicKey, Error> {
         let key = parse_public_key(self)?;
 
-        let agent_keys = match key {
+        let agent_key = match key {
             PublicKey::Rsa {
                 exponent, modulus
             } => agent_public_key::PublicKey::Rsa (
@@ -80,6 +87,6 @@ impl ToSshAgentKey for String {
             _ => todo!(),
         };
 
-        Ok(agent_keys)
+        Ok(agent_key)
     }
 }
