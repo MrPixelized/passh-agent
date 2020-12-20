@@ -1,5 +1,6 @@
 use std::error;
 use std::fmt;
+use std::str::from_utf8;
 
 use ssh_agent::proto::public_key as agent_public_key;
 use ssh_agent::proto::PublicKey;
@@ -67,25 +68,30 @@ impl ToPKey for String {
     }
 
     fn to_public_key(&self) -> Result<PKey<Public>, Error> {
-        let words: Vec<_> = self.split_whitespace().collect();
-
+        // Split the openssh key into the type and data
+        let line: String = self.lines().map(|ln| ln.trim()).collect();
+        let words: Vec<_> = line.split_whitespace().collect();
         let (key_type, raw) = match words.as_slice() {
             [key_type, raw, ..] => (*key_type, *raw),
             _ => todo!(),
         };
-
+        
+        // Decode the key
         let raw = base64::decode(raw)?;
 
         let key = match key_type {
             "ssh-rsa" => {
-                let size_e = BigEndian::read_u32(&raw[..4]) as usize;
-                let e = &raw[4..size_e+4];
+                // Extract the different components from the raw bytes in an
+                // openssh-formatted public key
+                let end_k = BigEndian::read_u32(&raw[..4]) as usize + 4;
+                let end_e = BigEndian::read_u32(&raw[end_k..end_k+4]) as usize + end_k + 4;
+                let end_n = BigEndian::read_u32(&raw[end_e..end_e+4]) as usize + end_e + 4;
 
-                let size_n = BigEndian::read_u32(&raw[size_e+4..size_e+8]) as usize;
-                let n = &raw[size_e+4..size_e+8+size_n];
+                let n = BigNum::from_slice(&raw[end_e+4..end_n])?;
+                let e = BigNum::from_slice(&raw[end_k+4..end_e])?;
 
                 PKey::from_rsa(
-                    Rsa::from_public_components(BigNum::from_slice(n)?, BigNum::from_slice(e)?)?
+                    Rsa::from_public_components(n, e)?
                 )?
             },
             _ => todo!(),
@@ -99,10 +105,21 @@ pub trait ToSshAgentPublicKey {
     fn to_ssh_agent_key(&self) -> Result<PublicKey, Error>;
 }
 
+impl ToSshAgentPublicKey for String {
+    fn to_ssh_agent_key(&self) -> Result<PublicKey, Error> {
+        let pkey = self.to_public_key()?;
+        let agent_key = pkey.to_ssh_agent_key()?;
+
+        Ok(agent_key)
+    }
+}
+
 impl ToSshAgentPublicKey for PKey<Public> {
     fn to_ssh_agent_key(&self) -> Result<PublicKey, Error> {
-        let n = self.rsa()?.n().to_vec();
+        let mut n = self.rsa()?.n().to_vec();
         let e = self.rsa()?.e().to_vec();
+
+        n.insert(0, 0);
 
         Ok(PublicKey::Rsa(agent_public_key::RsaPublicKey {
             n,
