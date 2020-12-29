@@ -1,16 +1,39 @@
 use std::process::Command;
 use std::path::PathBuf;
+use std::fmt;
+use std::error;
+
+#[derive(Debug)]
+pub enum Error {
+    InvalidOutputError,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::InvalidOutputError =>
+                write!(f, "The pass binary outputted data that could not be decoded."),
+        }
+    }
+}
+
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            Self::InvalidOutputError => None,
+        }
+    }
+}
 
 /// Get a datum from pass using the `pass show' command.
-pub fn query(key: String) -> Result<String, String> {
+pub fn query(key: String) -> Result<String, Error> {
     let output = Command::new("pass")
         .arg("show")
         .arg(key)
         .output()
         .expect("Failed to call Pass binary");
 
-    let res = String::from_utf8(output.stdout)
-        .expect("Pass output has invalid format");
+    let res = String::from_utf8(output.stdout).or(Err(Error::InvalidOutputError))?;
 
     Ok(res)
 }
