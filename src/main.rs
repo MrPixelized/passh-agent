@@ -1,17 +1,19 @@
-mod pass;
-mod key_handling;
 mod config;
-
-use key_handling::ToPKey;
-use key_handling::ToSshAgentPublicKey;
-
-use config::Config;
+mod key_handling;
+mod pass;
 
 use std::collections::HashMap;
 use std::env::temp_dir;
 use std::fs::remove_file;
 use std::error;
 use std::fmt;
+
+use config::Config;
+
+use dirs::config_dir;
+
+use key_handling::ToPKey;
+use key_handling::ToSshAgentPublicKey;
 
 use ssh_agent::agent::Agent;
 use ssh_agent::proto::Blob;
@@ -98,7 +100,10 @@ struct PassSshAgent {
 
 impl PassSshAgent {
     fn new() -> Self {
-        let config = Config::new("../tests/config.toml").unwrap();
+        let mut config_file = config_dir().unwrap();
+        config_file.push("passh-agent");
+        config_file.push("keys.toml");
+        let config = Config::new(config_file).unwrap();
         let key_map = HashMap::new();
 
         let mut agent = Self {

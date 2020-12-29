@@ -1,7 +1,8 @@
-use std::fs;
 use std::error;
 use std::fmt;
+use std::fs;
 use std::io;
+use std::path::PathBuf;
 
 use toml;
 
@@ -47,13 +48,12 @@ impl error::Error for Error {
     }
 }
 
-#[derive(Debug)]
 pub struct Config {
     pub keypairs: Vec<(String, String)>,
 }
 
 impl Config {
-    pub fn new(config: &str) -> Result<Self, Error> {
+    pub fn new(config: PathBuf) -> Result<Self, Error> {
         // Parse the configuration file into a loopable set of keypair tables
         let raw: String = fs::read_to_string(config)?;
         let config: toml::Value = raw.parse()?;
@@ -89,4 +89,3 @@ impl Config {
         Ok(Config { keypairs })
     }
 }
-

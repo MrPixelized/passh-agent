@@ -4,11 +4,11 @@ use std::fmt;
 use ssh_agent::proto::public_key as agent_public_key;
 use ssh_agent::proto::PublicKey;
 
-use openssl::rsa::Rsa;
+use openssl::bn::BigNum;
 use openssl::pkey::Private;
 use openssl::pkey::Public;
 use openssl::pkey::PKey;
-use openssl::bn::BigNum;
+use openssl::rsa::Rsa;
 
 use base64;
 use byteorder::BigEndian;
@@ -67,6 +67,7 @@ impl ToPKey for String {
     }
 
     fn to_public_key(&self) -> Result<PKey<Public>, Error> {
+        // TODO: Deal with PEM public keys, also
         // Split the openssh key into the type and data
         let line: String = self.lines().map(|ln| ln.trim()).collect();
         let words: Vec<_> = line.split_whitespace().collect();
@@ -86,8 +87,8 @@ impl ToPKey for String {
                 let end_e = BigEndian::read_u32(&raw[end_k..end_k+4]) as usize + end_k + 4;
                 let end_n = BigEndian::read_u32(&raw[end_e..end_e+4]) as usize + end_e + 4;
 
-                let n = BigNum::from_slice(&raw[end_e+4..end_n])?;
                 let e = BigNum::from_slice(&raw[end_k+4..end_e])?;
+                let n = BigNum::from_slice(&raw[end_e+4..end_n])?;
 
                 PKey::from_rsa(
                     Rsa::from_public_components(n, e)?

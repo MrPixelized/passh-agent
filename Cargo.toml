@@ -5,8 +5,9 @@ authors = ["Ischa Abraham <contact@ischa.dev>"]
 edition = "2018"
 
 [dependencies]
-ssh-agent = "0.2.2"
+ssh-agent = "0.2"
 toml = "0.5"
-openssl = "0.10.31"
-base64 = "0.13.0"
-byteorder = "1.3.4"
+openssl = "0.10"
+base64 = "0.13"
+byteorder = "1.3"
+dirs = "3.0"
