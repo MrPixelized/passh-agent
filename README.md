@@ -1,5 +1,6 @@
 # passh-agent
-An ssh-agent that fetches SSH keys from the Pass password manager.
+An ssh-agent that fetches SSH keys from the Pass password manager,
+written in Rust.
 
 ## Implementation
 Passh-agent does not cache any private keys - it makes calls to pass anytime
