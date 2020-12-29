@@ -1,6 +1,5 @@
 use std::error;
 use std::fmt;
-use std::str::from_utf8;
 
 use ssh_agent::proto::public_key as agent_public_key;
 use ssh_agent::proto::PublicKey;
