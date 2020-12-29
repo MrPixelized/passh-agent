@@ -124,13 +124,13 @@ impl PassSshAgent {
     }
 
     /// Return a list of identity objects representing every managed pubkey
-    fn get_identities(&self) -> Vec<Identity> {
+    fn get_identities(&self) -> Result<Vec<Identity>, Error> {
         // The public keys are cached as the keys of the key map
         self.key_map.keys().map(|pubkey|
-            Identity {
-                pubkey_blob: pubkey.to_blob().unwrap(),
+            Ok(Identity {
+                pubkey_blob: pubkey.to_blob()?,
                 comment: String::new(),
-            }
+            })
         )
         .collect()
     }
@@ -165,7 +165,7 @@ impl PassSshAgent {
     fn handle(&self, message: Message) -> Result<Message, Error> {
         match message {
             Message::RequestIdentities =>
-                Ok(Message::IdentitiesAnswer(self.get_identities())),
+                Ok(Message::IdentitiesAnswer(self.get_identities()?)),
             Message::SignRequest( ssh_agent::proto::SignRequest {
                 pubkey_blob,
                 data,
