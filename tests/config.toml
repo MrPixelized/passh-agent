@@ -1,3 +1,0 @@
-[test]
-privkey = "ssh/id_rsa"
-pubkey = "ssh/id_rsa.pub"
