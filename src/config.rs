@@ -76,16 +76,25 @@ impl Config {
                 None => return Err(Error::ConfigurationError),
             };
 
-            // Make sure to return an error if one of the keys is missing
+            // Make sure that both the public and private key are specified
             if !keypair.contains_key("pubkey") || !keypair.contains_key("privkey") {
-                println!("hi");
                 return Err(Error::ConfigurationError);
             }
 
-            // Add the pair to the keypairs vector
+            // Also make sure no other keys are specified
+            if keypair.len() > 2 {
+                return Err(Error::ConfigurationError);
+            }
+
             let (privkey, pubkey) =
                 (keypair["privkey"].to_owned(), keypair["pubkey"].to_owned());
 
+            // Make sure the private and public key paths are both specified as strings
+            if !privkey.is_str() || !pubkey.is_str() {
+                return Err(Error::ConfigurationError);
+            }
+
+            // Add the pair to the keypairs vector, making sure they are both strings
             match (privkey.as_str(), pubkey.as_str()) {
                 (Some(privkey), Some(pubkey)) =>
                     keypairs.push((privkey.to_string(), pubkey.to_string())),
