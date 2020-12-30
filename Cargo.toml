@@ -1,6 +1,10 @@
 [package]
 name = "passh-agent"
 version = "0.1.0"
+description = "An ssh-agent implementation to fetch your SSH keys from Pass."
+homepage = "https://github.com/MrPixelized/passh-agent"
+repository = "https://github.com/MrPixelized/passh-agent"
+license = "GPL-3"
 authors = ["Ischa Abraham <contact@ischa.dev>"]
 edition = "2018"
 
