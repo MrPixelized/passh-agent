@@ -6,6 +6,7 @@ use std::error;
 #[derive(Debug)]
 pub enum Error {
     InvalidOutputError,
+    PassError,
 }
 
 impl fmt::Display for Error {
@@ -13,6 +14,8 @@ impl fmt::Display for Error {
         match self {
             Self::InvalidOutputError =>
                 write!(f, "The pass binary outputted data that could not be decoded."),
+            Self::PassError =>
+                write!(f, "Pass returned an error when called."),
         }
     }
 }
@@ -21,6 +24,7 @@ impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
             Self::InvalidOutputError => None,
+            Self::PassError => None,
         }
     }
 }
@@ -35,7 +39,10 @@ pub fn query(key: String) -> Result<String, Error> {
 
     let res = String::from_utf8(output.stdout).or(Err(Error::InvalidOutputError))?;
 
-    Ok(res)
+    match res.as_str() {
+        "" => Err(Error::PassError),
+        _ => Ok(res),
+    }
 }
 
 /// Query pass for its full password tree,
