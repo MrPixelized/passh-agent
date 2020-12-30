@@ -83,7 +83,7 @@ fn tree_to_paths(lines: Vec<String>) -> Result<Vec<PathBuf>, String> {
         .map(|x| x.chars().collect::<Vec<_>>())
         .collect();
 
-    // Intialize the vector to store the generated paths.
+    // Initialize the vector to store the generated paths.
     let mut paths: Vec<PathBuf> = Vec::new();
 
     // Initialize the starting index of a found subtree to 0 and

@@ -55,7 +55,7 @@ pub struct Config {
 
 impl Config {
     pub fn new(config: PathBuf) -> Result<Self, Error> {
-        // Parse the configuration file into a loopable set of keypair tables
+        // Parse the configuration file into an iterable set of keypair tables
         let raw: String = fs::read_to_string(config)?;
         let config: toml::Value = raw.parse()?;
         let tables = match config.as_table() {
