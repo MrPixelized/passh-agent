@@ -6,14 +6,20 @@ written in Rust.
 Passh-agent is available as a package on the AUR: `passh-agent-bin`.
 
 The agent's socket is located at `$XDG_RUNTIME_DIR/passh-agent.sock`,
-which will usually be `/run/user/[your UID]/passh-agent.sock`. In order for
-SSH to interface with the agent, the `SSH_AUTH_SOCK` environment variable will
-need to be set to this path. Alternatively, you can specify the usage of this
-agent in `~/.ssh/config`.
+which will typically be `/run/user/[your UID]/passh-agent.sock`. In order for
+SSH to interface with the agent, the `SSH_AUTH_SOCK` environment can be
+set to this path. Alternatively, you can specify the usage of this
+agent in `~/.ssh/config`, as follows:
+
+```
+IdentityAgent "/var/run/user/[your UID]/passh-agent.sock"
+```
+
+The `id` command will tell you your UID on Linux.
 
 To use the agent throughout an entire user session it will need to be started
-at login, for example through a systemd user session or by putting it in X11's
-init scripts.
+at login through, for example, a systemd user session or by putting it in
+X11's init scripts.
 
 ## Configuration
 The configuration file is located at `$XDG_CONFIG_HOME/passh-agent/keys.toml` if
@@ -38,11 +44,12 @@ runtime, the agent must be restarted.
 The agent has no default configuration.
 
 ## Limitations
-For now, the agent only works with PEM-formatted RSA private keys and
+ - For now, the agent only works with PEM-formatted RSA private keys and
 openssh-formatted RSA public keys.
 This setup will be the default if you generated your keys some time
 ago, but more recently generated keys by default use a proprietary private
 key format. You'll have to convert the private key to PEM RSA.
+ - To add a new key to the agent, it needs to be restarted.
 
 ## Implementation
 Passh-agent does not cache any private keys - it makes calls to pass anytime
