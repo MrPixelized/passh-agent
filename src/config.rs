@@ -48,6 +48,7 @@ impl error::Error for Error {
     }
 }
 
+#[derive(Debug)]
 pub struct Config {
     pub keypairs: Vec<(String, String)>,
 }
@@ -87,5 +88,27 @@ impl Config {
         }
 
         Ok(Config { keypairs })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unneeded_fields() {
+        let conf = Config::new(PathBuf::from("tests/config/unneeded_fields.toml"));
+
+        match conf {
+            Err(Error::ConfigurationError) => (),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn proper_config() {
+        let conf = Config::new(PathBuf::from("tests/config/proper_config.toml"));
+        
+        conf.unwrap();
     }
 }

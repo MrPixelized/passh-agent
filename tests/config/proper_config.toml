@@ -1,0 +1,3 @@
+[good_boy]
+pubkey = "ssh/id_rsa.pub"
+privkey = "ssh/id_rsa"
