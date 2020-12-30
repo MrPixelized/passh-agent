@@ -106,6 +106,16 @@ mod tests {
     }
 
     #[test]
+    fn incomplete_fields() {
+        let conf = Config::new(PathBuf::from("tests/config/incomplete_fields.toml"));
+
+        match conf {
+            Err(Error::ConfigurationError) => (),
+            _ => panic!()
+        }
+    }
+
+    #[test]
     fn proper_config() {
         let conf = Config::new(PathBuf::from("tests/config/proper_config.toml"));
         
