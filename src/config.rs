@@ -69,17 +69,23 @@ impl Config {
         // Loop over each keypair
         for table in tables {
             // Extract the actual table of keypairs from the ensuing mess
-            let (_, keypair) = match table {
-                (name, keypair) => (name, match keypair.as_table() {
-                    Some(s) => s,
-                    None => return Err(Error::ConfigurationError),
-                }),
+            let (_, keypair) = table;
+
+            let keypair = match keypair.as_table() {
+                Some(s) => s,
+                None => return Err(Error::ConfigurationError),
             };
 
+            // Make sure to return an error if one of the keys is missing
+            if !keypair.contains_key("pubkey") || !keypair.contains_key("privkey") {
+                println!("hi");
+                return Err(Error::ConfigurationError);
+            }
+
+            // Add the pair to the keypairs vector
             let (privkey, pubkey) =
                 (keypair["privkey"].to_owned(), keypair["pubkey"].to_owned());
 
-            // Add the pair to the vector
             match (privkey.as_str(), pubkey.as_str()) {
                 (Some(privkey), Some(pubkey)) =>
                     keypairs.push((privkey.to_string(), pubkey.to_string())),
