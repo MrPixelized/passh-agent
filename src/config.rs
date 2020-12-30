@@ -106,6 +106,16 @@ mod tests {
     }
 
     #[test]
+    fn nested_sections() {
+        let conf = Config::new(PathBuf::from("tests/config/nested_sections.toml"));
+
+        match conf {
+            Err(Error::ConfigurationError) => (),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
     fn incomplete_fields() {
         let conf = Config::new(PathBuf::from("tests/config/incomplete_fields.toml"));
 
