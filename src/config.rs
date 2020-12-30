@@ -106,6 +106,16 @@ mod tests {
     }
 
     #[test]
+    fn wrong_datatypes() {
+        let conf = Config::new(PathBuf::from("tests/config/wrong_datatypes.toml"));
+
+        match conf {
+            Err(Error::ConfigurationError) => (),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
     fn nested_sections() {
         let conf = Config::new(PathBuf::from("tests/config/nested_sections.toml"));
 
