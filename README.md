@@ -2,24 +2,18 @@
 An ssh-agent that fetches SSH keys from the Pass password manager,
 written in Rust.
 
-## Implementation
-Passh-agent does not cache any private keys - it makes calls to pass anytime
-private keys are needed, so they are decrypted on-demand.
-This allows for integration of the agent with the GPG password caching you
-would generally expect a pass user to have setup.
-It *does* cache public keys, for easy lookup of private keys.
+## Installation
+Passh-agent is available as a package on the AUR: `passh-agent-bin`.
 
-Passh-agent implements just the necessary parts of the ssh-agent protocol to
-allow for signing and verifying messages.
-Specifically, it does not implement adding keypairs using ssh-add,
-as keys are added to the agent through a minimal configuration file.
+The agent's socket is located at `$XDG_RUNTIME_DIR/passh-agent.sock`,
+which will usually be `/run/user/[your UID]/passh-agent.sock`. In order for
+SSH to interface with the agent, the `SSH_AUTH_SOCK` environment variable will
+need to be set to this path. Alternatively, you can specify the usage of this
+agent in `~/.ssh/config`.
 
-## Limitations
-For now, the agent only works with PEM-formatted RSA private keys and
-openssh-formatted RSA public keys.
-This setup will be the default if you generated your keys some time
-ago, but more recently generated keys by default use a proprietary private
-key format. You'll have to convert the private key to PEM RSA.
+To use the agent throughout an entire user session it will need to be started
+at login, for example through a systemd user session or by putting it in X11's
+init scripts.
 
 ## Configuration
 The configuration file is located at `$XDG_CONFIG_HOME/passh-agent/keys.toml` if
@@ -42,6 +36,25 @@ The agent caches the public keys for faster lookup, so if a keypair is added at
 runtime, the agent must be restarted.
 
 The agent has no default configuration.
+
+## Limitations
+For now, the agent only works with PEM-formatted RSA private keys and
+openssh-formatted RSA public keys.
+This setup will be the default if you generated your keys some time
+ago, but more recently generated keys by default use a proprietary private
+key format. You'll have to convert the private key to PEM RSA.
+
+## Implementation
+Passh-agent does not cache any private keys - it makes calls to pass anytime
+private keys are needed, so they are decrypted on-demand.
+This allows for integration of the agent with the GPG password caching you
+would generally expect a pass user to have setup.
+It *does* cache public keys, for easy lookup of private keys.
+
+Passh-agent implements just the necessary parts of the ssh-agent protocol to
+allow for signing and verifying messages.
+Specifically, it does not implement adding keypairs using ssh-add,
+as keys are added to the agent through a minimal configuration file.
 
 ## Testing
 Running the unit tests written for this program requires that you have
