@@ -96,6 +96,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn missing_config() {
+        let conf = Config::new(PathBuf::from("tests/config/i_dont_exist"));
+
+        match conf {
+            Err(Error::IOError(_)) => (),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
     fn invalid_toml() {
         let conf = Config::new(PathBuf::from("tests/config/invalid_toml.toml"));
 
