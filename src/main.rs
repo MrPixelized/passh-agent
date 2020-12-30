@@ -3,7 +3,6 @@ mod key_handling;
 mod pass;
 
 use std::collections::HashMap;
-use std::env::temp_dir;
 use std::fs::remove_file;
 use std::error;
 use std::fmt;
@@ -11,6 +10,7 @@ use std::fmt;
 use config::Config;
 
 use dirs::config_dir;
+use dirs::runtime_dir;
 
 use key_handling::ToPKey;
 use key_handling::ToSshAgentPublicKey;
@@ -193,7 +193,7 @@ impl Agent for PassSshAgent {
 fn main() {
     let agent = PassSshAgent::new();
 
-    let sockfile = temp_dir().join("passh-agent.sock");
+    let sockfile = runtime_dir().unwrap().join("passh-agent.sock");
     remove_file(&sockfile).ok();
 
     agent.run_unix(sockfile).unwrap();
