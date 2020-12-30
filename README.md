@@ -5,8 +5,8 @@ written in Rust.
 ## Implementation
 Passh-agent does not cache any private keys - it makes calls to pass anytime
 private keys are needed, so they are decrypted on-demand.
-This allows integration the of agent with the GPG password caching you would
-generally expect a pass user to have setup.
+This allows for integration of the agent with the GPG password caching you
+would generally expect a pass user to have setup.
 It *does* cache public keys, for easy lookup of private keys.
 
 Passh-agent implements just the necessary parts of the ssh-agent protocol to
@@ -43,6 +43,11 @@ runtime, the agent must be restarted.
 
 The agent has no default configuration.
 
+## Testing
+Running the unit tests written for this program requires that you have
+a valid private key at `ssh/id_rsa` and a valid public key at `ssh/id_rsa.pub`
+in your pass password store.
+
 ## Roadmap
 Passh-agent is now barely functional, but many features have yet to be added.
 Planned/implemented features:
@@ -54,3 +59,4 @@ Planned/implemented features:
  - [ ] PEM public key support
  - [ ] Optional filesystem storage for public keys
  - [ ] Regular expressions to configure keypairs
+ - [ ] On-demand loading of public keys (possibly?)
