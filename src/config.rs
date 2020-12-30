@@ -96,6 +96,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn invalid_toml() {
+        let conf = Config::new(PathBuf::from("tests/config/invalid_toml.toml"));
+
+        match conf {
+            Err(Error::ParseError(_)) => (),
+            _ => panic!(),
+        }
+    }
+
+    #[test]
     fn unneeded_fields() {
         let conf = Config::new(PathBuf::from("tests/config/unneeded_fields.toml"));
 
