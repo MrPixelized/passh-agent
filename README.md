@@ -18,8 +18,16 @@ IdentityAgent "/var/run/user/[your UID]/passh-agent.sock"
 The `id` command will tell you your UID on Linux.
 
 To use the agent throughout an entire user session it will need to be started
-at login through, for example, a systemd user session or by putting it in
-X11's init scripts.
+at login through, for example, a systemd user service or by putting it in
+X11's init scripts. The AUR package also comes with a systemd user service.
+If you wish to make use of it, run
+
+```
+systemctl --user enable passh-agent.service
+systemctl --user start passh-agent.service
+```
+
+after installing the package.
 
 ## Configuration
 The configuration file is located at `$XDG_CONFIG_HOME/passh-agent/keys.toml` if
@@ -80,3 +88,4 @@ Planned/implemented features:
  - [ ] Optional filesystem storage for public keys
  - [ ] Regular expressions to configure keypairs
  - [ ] On-demand loading of public keys (possibly?)
+ - [x] Systemd user service provided with the AUR package
