@@ -1,0 +1,9 @@
+[Unit]
+Description=Pass SSH key agent
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/passh-agent
+
+[Install]
+WantedBy=default.target
