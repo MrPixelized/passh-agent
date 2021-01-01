@@ -8,13 +8,15 @@ Passh-agent is available as a package on the AUR: `passh-agent-bin`.
 The agent's socket is located at `$XDG_RUNTIME_DIR/passh-agent.sock`,
 which will typically be `/run/user/[your UID]/passh-agent.sock`. In order for
 SSH to interface with the agent, the `SSH_AUTH_SOCK` environment can be
-set to this path. Alternatively, you can specify the usage of this
-agent in `~/.ssh/config`, as follows:
+set to this path.
+
+Alternatively, you can put the following line at the top of `~/.ssh/config`:
 
 ```
 IdentityAgent "/var/run/user/[your UID]/passh-agent.sock"
 ```
 
+To make sure the ssh command looks to passh-agent for key-related business.
 The `id` command will tell you your UID on Linux.
 
 To use the agent throughout an entire user session it will need to be started
@@ -28,6 +30,9 @@ systemctl --user start passh-agent.service
 ```
 
 after installing the package.
+
+Be sure to read through **limitations** if you are not sure of what kind of private
+key you have.
 
 ## Configuration
 The configuration file is located at `$XDG_CONFIG_HOME/passh-agent/keys.toml` if
@@ -57,6 +62,11 @@ openssh-formatted RSA public keys.
 This setup will be the default if you generated your keys some time
 ago, but more recently generated keys by default use a proprietary private
 key format. You'll have to convert the private key to PEM RSA.
+To convert the new openssh format private key to PEM,
+you can use the command ``` ssh-keygen -f [path to your key] -m pem -p ```.
+Make sure to set an empty password for the key.
+The conversion will be done in-place.
+
  - To add a new key to the agent, it needs to be restarted.
 
 ## Implementation
