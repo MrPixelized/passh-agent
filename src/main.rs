@@ -95,7 +95,6 @@ impl error::Error for Error {
 struct PassSshAgent {
     /// The query string passed to `pass show'.
     config: Config,
-    key_map: HashMap<PublicKey, String>,
 }
 
 impl PassSshAgent {
@@ -104,36 +103,21 @@ impl PassSshAgent {
         config_file.push("passh-agent");
         config_file.push("keys.toml");
         let config = Config::new(config_file).unwrap();
-        let key_map = HashMap::new();
 
-        let mut agent = Self {
+        let agent = Self {
             config,
-            key_map,
         };
 
-        agent.build_cache();
         agent
-    }
-
-    /// Go through all the public keys in the pass database and
-    /// map them to their corresponding locations in pass
-    fn build_cache(&mut self) {
-        for (privkey_query, pubkey_query) in self.config.keypairs.iter() {
-            let pubkey = pass::query(pubkey_query.to_owned()).unwrap();
-
-            self.key_map.insert(
-                pubkey.to_ssh_agent_key().unwrap(),
-                String::from(privkey_query),
-            );
-        }
     }
 
     /// Return a list of identity objects representing every managed pubkey
     fn get_identities(&self) -> Result<Vec<Identity>, Error> {
-        // The public keys are cached as the keys of the key map
-        self.key_map.keys().map(|pubkey|
+        // Iterate through all the public key queries in the config,
+        // query for their result and make an identity object out of it
+        self.config.keypairs.iter().map(|(pubkey_query, _)|
             Ok(Identity {
-                pubkey_blob: pubkey.to_blob()?,
+                pubkey_blob: pass::query(pubkey_query.to_owned())?.to_blob()?,
                 comment: String::new(),
             })
         )
