@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::fs::remove_file;
 use std::error;
 use std::fmt;
+use std::sync::Mutex;
 
 use config::Config;
 
@@ -93,35 +94,44 @@ impl error::Error for Error {
 }
 
 struct PassSshAgent {
-    /// The query string passed to `pass show'.
+    /// The query string passed to `pass show'
     config: Config,
-    key_map: HashMap<PublicKey, String>,
+    /// A cache of the public keys, so they are not read multiple times,
+    /// needs to be a mutex since the ssh agent library cannot handle mutability
+    key_map: Mutex<HashMap<PublicKey, String>>,
 }
 
 impl PassSshAgent {
     fn new() -> Self {
+        // Load the configuraiton file
         let mut config_file = config_dir().unwrap();
         config_file.push("passh-agent");
         config_file.push("keys.toml");
         let config = Config::new(config_file).unwrap();
-        let key_map = HashMap::new();
 
-        let mut agent = Self {
+        // Setup a 'key map' for caching of public keys
+        let key_map = Mutex::new(HashMap::new());
+
+        Self {
             config,
             key_map,
-        };
-
-        agent.build_cache();
-        agent
+        }
     }
 
     /// Go through all the public keys in the pass database and
     /// map them to their corresponding locations in pass
-    fn build_cache(&mut self) {
+    fn build_cache(&self) {
+        // Only build the cache if it is not already built
+        let mut key_map = self.key_map.lock().unwrap();
+        if !key_map.is_empty() {
+            return
+        }
+
+        // List the keypairs in the cache
         for (privkey_query, pubkey_query) in self.config.keypairs.iter() {
             let pubkey = pass::query(pubkey_query.to_owned()).unwrap();
 
-            self.key_map.insert(
+            key_map.insert(
                 pubkey.to_ssh_agent_key().unwrap(),
                 String::from(privkey_query),
             );
@@ -131,7 +141,9 @@ impl PassSshAgent {
     /// Return a list of identity objects representing every managed pubkey
     fn get_identities(&self) -> Result<Vec<Identity>, Error> {
         // The public keys are cached as the keys of the key map
-        self.key_map.keys().map(|pubkey|
+        let key_map = self.key_map.lock().unwrap();
+
+        key_map.keys().map(|pubkey|
             Ok(Identity {
                 pubkey_blob: pubkey.to_blob()?,
                 comment: String::new(),
@@ -144,14 +156,15 @@ impl PassSshAgent {
     /// pubkey blob
     fn sign(&self, pubkey_blob: &Vec<u8>, data: &Vec<u8>) -> Result<SignatureBlob, Error> {
         // Check if the given public key is in the cache
+        let key_map = self.key_map.lock().unwrap();
         let pubkey = &PublicKey::from_blob(pubkey_blob)?;
 
-        if !self.key_map.contains_key(pubkey) {
+        if !key_map.contains_key(pubkey) {
             return Err(Error::MissingPubkeyError);
         }
 
         // Get the privkey from pass using the cached query
-        let privkey_query = &self.key_map[pubkey];
+        let privkey_query = &key_map[pubkey];
         let privkey_raw = pass::query(privkey_query.to_owned())?;
         let privkey = privkey_raw.to_private_key()?;
 
@@ -168,6 +181,10 @@ impl PassSshAgent {
 
     /// Generate a response to a message from a client.
     fn handle(&self, message: Message) -> Result<Message, Error> {
+        // Make sure the public keys are cached
+        self.build_cache();
+
+        // Handle the SSH agent request
         match message {
             Message::RequestIdentities =>
                 Ok(Message::IdentitiesAnswer(self.get_identities()?)),
