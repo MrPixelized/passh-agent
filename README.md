@@ -3,7 +3,8 @@ An ssh-agent that fetches SSH keys from the Pass password manager,
 written in Rust.
 
 ## Installation
-Passh-agent is available as a package on the AUR: `passh-agent-bin`.
+Passh-agent is available as a package on the AUR: `passh-agent-git`, or
+`passh-agent-bin` which tends to be less up to date.
 
 The agent's socket is located at `$XDG_RUNTIME_DIR/passh-agent.sock`,
 which will typically be `/run/user/[your UID]/passh-agent.sock`. In order for
@@ -97,5 +98,7 @@ Planned/implemented features:
  - [ ] PEM public key support
  - [ ] Optional filesystem storage for public keys
  - [ ] Regular expressions to configure keypairs
- - [ ] On-demand loading of public keys (possibly?)
+ - [x] On-demand loading of public keys (possibly?)
+ - [ ] Fully dynamic public key loading (no cache) (improbably?)
+ - [ ] Moving away from the ssh-agent rust library
  - [x] Systemd user service provided with the AUR package
