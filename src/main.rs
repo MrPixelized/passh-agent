@@ -120,22 +120,24 @@ impl PassSshAgent {
 
     /// Go through all the public keys in the pass database and
     /// map them to their corresponding locations in pass
-    fn build_cache(&self) {
+    fn build_cache(&self) -> Result<(), Error> {
         // Only build the cache if it is not already built
         let mut key_map = self.key_map.lock().unwrap();
         if !key_map.is_empty() {
-            return
+            return Ok(())
         }
 
         // List the keypairs in the cache
         for (privkey_query, pubkey_query) in self.config.keypairs.iter() {
-            let pubkey = pass::query(pubkey_query.to_owned()).unwrap();
+            let pubkey = pass::query(pubkey_query.to_owned())?;
 
             key_map.insert(
                 pubkey.to_ssh_agent_key().unwrap(),
                 String::from(privkey_query),
             );
         }
+
+        Ok(())
     }
 
     /// Return a list of identity objects representing every managed pubkey
@@ -182,7 +184,7 @@ impl PassSshAgent {
     /// Generate a response to a message from a client.
     fn handle(&self, message: Message) -> Result<Message, Error> {
         // Make sure the public keys are cached
-        self.build_cache();
+        self.build_cache()?;
 
         // Handle the SSH agent request
         match message {
