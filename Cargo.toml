@@ -9,7 +9,7 @@ authors = ["Ischa Abraham <contact@ischa.dev>"]
 edition = "2018"
 
 [dependencies]
-ssh-agent = "<= 0.2.2"
+ssh-agent-lib = "0.2.5"
 toml = "0.5"
 openssl = "0.10"
 base64 = "0.13"

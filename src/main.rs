@@ -16,20 +16,20 @@ use dirs::runtime_dir;
 use key_handling::ToPKey;
 use key_handling::ToSshAgentPublicKey;
 
-use ssh_agent::agent::Agent;
-use ssh_agent::proto::Blob;
-use ssh_agent::proto::Identity;
-use ssh_agent::proto::Message;
-use ssh_agent::proto::PublicKey;
-use ssh_agent::proto::SignatureBlob;
-use ssh_agent::proto::Signature;
+use ssh_agent_lib::agent::Agent;
+use ssh_agent_lib::proto::Blob;
+use ssh_agent_lib::proto::Identity;
+use ssh_agent_lib::proto::Message;
+use ssh_agent_lib::proto::PublicKey;
+use ssh_agent_lib::proto::SignatureBlob;
+use ssh_agent_lib::proto::Signature;
 
 use openssl::sign::Signer;
 use openssl::hash::MessageDigest;
 
 #[derive(Debug)]
 enum Error {
-    ProtoError(ssh_agent::proto::ProtoError),
+    ProtoError(ssh_agent_lib::proto::ProtoError),
     PassError(pass::Error),
     KeyError(key_handling::Error),
     OpensslError(openssl::error::ErrorStack),
@@ -37,8 +37,8 @@ enum Error {
     UnimplementedError,
 }
 
-impl From<ssh_agent::proto::ProtoError> for Error {
-    fn from(err: ssh_agent::proto::ProtoError) -> Self {
+impl From<ssh_agent_lib::proto::ProtoError> for Error {
+    fn from(err: ssh_agent_lib::proto::ProtoError) -> Self {
         Error::ProtoError(err)
     }
 }
@@ -190,7 +190,7 @@ impl PassSshAgent {
         match message {
             Message::RequestIdentities =>
                 Ok(Message::IdentitiesAnswer(self.get_identities()?)),
-            Message::SignRequest( ssh_agent::proto::SignRequest {
+            Message::SignRequest( ssh_agent_lib::proto::SignRequest {
                 pubkey_blob,
                 data,
                 ..

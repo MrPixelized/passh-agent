@@ -1,8 +1,8 @@
 use std::error;
 use std::fmt;
 
-use ssh_agent::proto::public_key as agent_public_key;
-use ssh_agent::proto::PublicKey;
+use ssh_agent_lib::proto::public_key as agent_public_key;
+use ssh_agent_lib::proto::PublicKey;
 
 use openssl::bn::BigNum;
 use openssl::pkey::Private;
